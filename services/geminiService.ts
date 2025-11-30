@@ -1,12 +1,10 @@
-
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { StoryRequest, GeneratedStory, StoryGenre, MediaType, ImageStyle, VideoFormat } from '../types';
-import { ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID } from '../constants';
+import { ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID, GEMINI_API_KEY } from '../constants';
 
-// --- SERVICE AUDIO ELEVENLABS ---
 
 export const generateElevenLabsAudio = async (text: string): Promise<string> => {
-    // Nettoyage basique du texte pour éviter de lire le markdown ou les titres résiduels
+    
     const cleanText = text
         .replace(/[*#_]/g, '') // Enlève *, #, _
         .replace(/\[.*?\]/g, '') // Enlève les annotations entre crochets
@@ -22,7 +20,7 @@ export const generateElevenLabsAudio = async (text: string): Promise<string> => 
             },
             body: JSON.stringify({
                 text: cleanText,
-                model_id: "eleven_multilingual_v2", // Meilleur support pour FR/Créole
+                model_id: "eleven_multilingual_v2", 
                 voice_settings: {
                     stability: 0.5,
                     similarity_boost: 0.75,
@@ -50,10 +48,10 @@ export const generateElevenLabsAudio = async (text: string): Promise<string> => 
     }
 };
 
-// --- SERVICE IMAGE GRATUIT (Pollinations.ai) ---
+
 
 const generateFreeImage = async (prompt: string, style: ImageStyle): Promise<string> => {
-    // Construction d'un prompt amélioré pour le modèle Flux/SDXL de Pollinations
+
     const enhancedPrompt = `${prompt}, ${style} style, high quality, detailed, 8k resolution, cinematic lighting`;
     const encodedPrompt = encodeURIComponent(enhancedPrompt);
     // Utilisation du modèle 'flux' pour une meilleure qualité
@@ -128,7 +126,9 @@ export const regenerateStoryImage = async (
 };
 
 export const generateFullStory = async (request: StoryRequest): Promise<GeneratedStory> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+    
+    // Initialisation correcte de Gemini
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
   try {
     // === 1. TEXT GENERATION (Foundation) ===
@@ -199,24 +199,29 @@ export const generateFullStory = async (request: StoryRequest): Promise<Generate
       }
     `;
 
-    const textResponse = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            title: { type: Type.STRING },
-            content: { type: Type.STRING },
-            imagePrompt: { type: Type.STRING },
-          },
-          required: ["title", "content", "imagePrompt"],
+    // Configuration du Modèle avec le Schema JSON
+    const model = genAI.getGenerativeModel({
+        model: "gemini-2.5-flash", // Utilisation de la version stable
+        generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+                type: SchemaType.OBJECT,
+                properties: {
+                    title: { type: SchemaType.STRING },
+                    content: { type: SchemaType.STRING },
+                    imagePrompt: { type: SchemaType.STRING },
+                },
+                required: ["title", "content", "imagePrompt"],
+            }
         }
-      }
     });
 
-    const textData = JSON.parse(textResponse.text || '{}');
+    // Génération du contenu
+    const result = await model.generateContent(prompt);
+    const textResponse = result.response.text();
+    
+    // Parsing du JSON
+    const textData = JSON.parse(textResponse || '{}');
     const title = textData.title || "Sans titre";
     const content = textData.content || "Aucun contenu généré.";
     const imagePromptText = textData.imagePrompt || `Educational illustration about ${request.topic}`;
