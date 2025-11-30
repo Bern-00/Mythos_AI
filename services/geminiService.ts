@@ -1,7 +1,8 @@
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
-import { StoryRequest, GeneratedStory, StoryGenre, MediaType, ImageStyle, VideoFormat } from '../types';
+import { StoryRequest, GeneratedStory, StoryGenre, MediaType, ImageStyle, VideoFormat, ChatMessage } from '../types';
 import { ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID, GEMINI_API_KEY } from '../constants';
 
+// --- SERVICE AUDIO ELEVENLABS ---
 
 export const generateElevenLabsAudio = async (text: string): Promise<string> => {
     
@@ -48,7 +49,7 @@ export const generateElevenLabsAudio = async (text: string): Promise<string> => 
     }
 };
 
-
+// --- SERVICE IMAGE GRATUIT (Pollinations.ai) ---
 
 const generateFreeImage = async (prompt: string, style: ImageStyle): Promise<string> => {
 
@@ -79,8 +80,6 @@ const generateFreeImage = async (prompt: string, style: ImageStyle): Promise<str
 
 // --- SERVICE VIDEO (SIMULATION) ---
 
-// L'API tierce étant instable/payante, nous simulons la vidéo pour l'instant
-// en renvoyant l'image elle-même. Le front-end appliquera un effet Ken Burns.
 const simulateVideoFromImage = async (base64ImageWithHeader: string): Promise<string> => {
     console.log("Simulation vidéo active...");
     await new Promise(resolve => setTimeout(resolve, 1500)); // Petit délai pour l'effet de chargement
@@ -127,8 +126,8 @@ export const regenerateStoryImage = async (
 
 export const generateFullStory = async (request: StoryRequest): Promise<GeneratedStory> => {
     
-    // Initialisation correcte de Gemini
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    // Initialisation correcte de Gemini (avec protection contre undefined)
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY || "");
 
   try {
     // === 1. TEXT GENERATION (Foundation) ===
@@ -201,7 +200,7 @@ export const generateFullStory = async (request: StoryRequest): Promise<Generate
 
     // Configuration du Modèle avec le Schema JSON
     const model = genAI.getGenerativeModel({
-        model: "gemini-2.5-flash", // Utilisation de la version stable
+        model: "gemini-1.5-flash", // Remis sur la version stable
         generationConfig: {
             responseMimeType: "application/json",
             responseSchema: {
@@ -278,7 +277,9 @@ export const generateFullStory = async (request: StoryRequest): Promise<Generate
     console.error("Content generation failed:", error);
     throw new Error(error.message || "Échec de la génération.");
   }
-  // --- AJOUTS POUR LE CHAT SOCRATIQUE ---
+};
+
+// --- AJOUTS POUR LE CHAT SOCRATIQUE (EN DEHORS DE LA FONCTION PRINCIPALE) ---
 
 // 1. Génère la première question d'ouverture basées sur l'histoire
 export const generateInitialQuestion = async (storyContent: string): Promise<string> => {
@@ -327,5 +328,4 @@ export const sendChatMessage = async (history: ChatMessage[], newMessage: string
 
     const result = await chat.sendMessage(newMessage);
     return result.response.text();
-};
 };
