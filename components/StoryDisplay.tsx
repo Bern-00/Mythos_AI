@@ -1,7 +1,6 @@
 import React from 'react';
-import { GeneratedStory, MediaType } from '../types';
+import { GeneratedStory } from '../types';
 import { AudioPlayer } from './AudioPlayer';
-import { SocraticChat } from './SocraticChat'; // ✅ Import du nouveau chat
 
 interface StoryDisplayProps {
     story: GeneratedStory;
@@ -15,7 +14,6 @@ export const StoryDisplay: React.FC<StoryDisplayProps> = ({
     isAudioLoading = false
 }) => {
     
-    // Fonction pour déterminer si on affiche une vidéo ou une image
     const renderMedia = () => {
         if (story.videoUrl) {
             return (
@@ -54,15 +52,12 @@ export const StoryDisplay: React.FC<StoryDisplayProps> = ({
     return (
         <div className="max-w-4xl mx-auto px-4 py-8 animate-fade-in">
             
-            {/* 1. TITRE DE L'HISTOIRE */}
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6 text-center font-serif">
                 {story.title}
             </h1>
 
-            {/* 2. MEDIA (IMAGE OU VIDEO) */}
             {renderMedia()}
 
-            {/* 3. LECTEUR AUDIO (SI DISPONIBLE) */}
             {story.audioUrl && (
                 <div className="mb-8 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                     <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
@@ -76,7 +71,6 @@ export const StoryDisplay: React.FC<StoryDisplayProps> = ({
                 </div>
             )}
 
-            {/* 4. CONTENU TEXTE */}
             <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 mb-12">
                 {story.content.split('\n').map((paragraph, index) => (
                     paragraph.trim() && (
@@ -86,15 +80,6 @@ export const StoryDisplay: React.FC<StoryDisplayProps> = ({
                     )
                 ))}
             </div>
-
-            {/* 5. LE CHAT SOCRATIQUE (NOUVEAU) */}
-            {/* On sépare visuellement avec une ligne */}
-            <div className="border-t border-gray-200 my-8"></div>
-            
-            <div className="bg-blue-50/50 p-4 md:p-6 rounded-2xl border border-blue-100">
-                <SocraticChat storyContent={story.content} />
-            </div>
-
         </div>
     );
 };

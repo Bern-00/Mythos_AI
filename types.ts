@@ -1,49 +1,48 @@
-
 export enum StoryGenre {
-  EDUCATIONAL = 'Éducatif / Cours',
-  FANTASY = 'Fantaisie',
-  SCI_FI = 'Science-Fiction',
-  FOLKTALE = 'Conte / Légende',
-  MYSTERY = 'Mystère',
-  ADVENTURE = 'Aventure'
+  EDUCATIONAL = 'educational',
+  FANTASY = 'fantasy',
+  SCI_FI = 'sci-fi',
+  FOLKTALE = 'folktale',
+  MYSTERY = 'mystery',
+  ADVENTURE = 'adventure',
 }
 
 export enum AgeGroup {
-  CHILD = 'Enfants (5-10 ans)',
-  TEEN = 'Adolescents (11-17 ans)',
-  ADULT = 'Adultes (18+ ans)'
+  CHILD = 'child',
+  TEEN = 'teen',
+  ADULT = 'adult',
 }
 
 export enum ImageStyle {
-  DIGITAL_ART = 'Art Numérique (Défaut)',
-  REALISTIC = 'Photo Réaliste',
-  CARTOON = 'Dessin Animé / Pixar',
-  WATERCOLOR = 'Aquarelle',
-  OIL_PAINTING = 'Peinture à l\'huile',
-  SKETCH = 'Esquisse Crayon',
-  RETRO = 'Rétro / Vintage'
+  DIGITAL_ART = 'digital-art',
+  CARTOON = 'cartoon',
+  REALISTIC = 'realistic',
+  WATERCOLOR = 'watercolor',
+  OIL_PAINTING = 'oil-painting',
+  SKETCH = 'sketch',
+  RETRO = 'retro',
 }
 
 export enum MediaType {
-  TEXT_WITH_IMAGE = 'Texte + Image',
-  TEXT_ONLY = 'Texte Seul',
-  VIDEO = 'Vidéo Explicative (Veo)'
+  TEXT_WITH_IMAGE = 'text-image',
+  TEXT_ONLY = 'text-only',
+  VIDEO = 'video',
 }
 
 export enum VideoFormat {
   MP4 = 'mp4',
-  MOV = 'mov'
+  MOV = 'mov',
 }
 
 export interface StoryRequest {
   topic: string;
   genre: StoryGenre;
   ageGroup: AgeGroup;
-  imageStyle: ImageStyle;
-  includeHaitianCulture: boolean;
   language: string;
+  imageStyle: ImageStyle;
   mediaType: MediaType;
   videoFormat?: VideoFormat;
+  includeHaitianCulture: boolean;
 }
 
 export interface GeneratedStory {
@@ -53,29 +52,6 @@ export interface GeneratedStory {
   audioUrl?: string;
   videoUrl?: string;
   imagePrompt?: string;
-  videoError?: string; // Message d'erreur spécifique si la génération vidéo échoue
   videoFormat?: VideoFormat;
-  isVideoSimulated?: boolean; // Indique si la vidéo est une simulation (image animée) faute d'API
-}
-
-export interface HistoryItem extends GeneratedStory {
-  id: string;
-  timestamp: number;
-  originalTopic: string;
-  mediaType: MediaType;
-  genre: StoryGenre;
-}
-
-export interface GeminiError {
-  message: string;
-}
-// Ajoute ça à la fin du fichier
-export interface ChatMessage {
-  role: 'user' | 'model';
-  text: string;
-}
-
-export interface ChatSession {
-  history: ChatMessage[];
-  context: string; // Le contenu de l'histoire générée
+  isVideoSimulated?: boolean;
 }
