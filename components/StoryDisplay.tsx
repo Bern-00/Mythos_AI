@@ -1,6 +1,6 @@
 import React from 'react';
 import { GeneratedStory } from '../types';
-import { AudioPlayer } from './AudioPlayer';
+import { AudioPlayer } from './AudioPlayer'; // Maintenant ça va marcher car AudioPlayer est bien exporté
 
 interface StoryDisplayProps {
     story: GeneratedStory;
