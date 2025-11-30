@@ -278,4 +278,54 @@ export const generateFullStory = async (request: StoryRequest): Promise<Generate
     console.error("Content generation failed:", error);
     throw new Error(error.message || "Échec de la génération.");
   }
+  // --- AJOUTS POUR LE CHAT SOCRATIQUE ---
+
+// 1. Génère la première question d'ouverture basées sur l'histoire
+export const generateInitialQuestion = async (storyContent: string): Promise<string> => {
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY || "");
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = `
+    Basé sur le contenu éducatif ou narratif suivant :
+    "${storyContent.substring(0, 2000)}..." (extrait)
+
+    TÂCHE : Pose une question courte, intrigante et ouverte à l'utilisateur pour le pousser à réfléchir sur la morale, le concept scientifique ou l'émotion de l'histoire.
+    La question doit inviter à la discussion. Ne fais pas de longs préambules. Pose juste la question.
+    `;
+
+    const result = await model.generateContent(prompt);
+    return result.response.text();
+};
+
+// 2. Gère la conversation continue
+export const sendChatMessage = async (history: ChatMessage[], newMessage: string, context: string): Promise<string> => {
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY || "");
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    // On transforme l'historique pour le format de Gemini
+    const chatHistory = [
+        {
+            role: "user",
+            parts: [{ text: `Voici le contexte de notre discussion (l'histoire que je viens de lire) : ${context}` }]
+        },
+        {
+            role: "model",
+            parts: [{ text: "Bien compris. Je suis prêt à discuter de cette histoire avec vous en utilisant la méthode socratique. Je poserai des questions pour guider votre réflexion." }]
+        },
+        ...history.map(msg => ({
+            role: msg.role === 'user' ? 'user' : 'model',
+            parts: [{ text: msg.text }]
+        }))
+    ];
+
+    const chat = model.startChat({
+        history: chatHistory as any, // "as any" pour éviter les conflits de typage stricts ici
+        generationConfig: {
+            maxOutputTokens: 300,
+        },
+    });
+
+    const result = await chat.sendMessage(newMessage);
+    return result.response.text();
+};
 };

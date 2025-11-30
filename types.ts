@@ -69,3 +69,13 @@ export interface HistoryItem extends GeneratedStory {
 export interface GeminiError {
   message: string;
 }
+// Ajoute ça à la fin du fichier
+export interface ChatMessage {
+  role: 'user' | 'model';
+  text: string;
+}
+
+export interface ChatSession {
+  history: ChatMessage[];
+  context: string; // Le contenu de l'histoire générée
+}
